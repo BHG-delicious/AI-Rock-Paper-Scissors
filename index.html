@@ -29,7 +29,7 @@
             <div class="card">
                 <h2><i class="fas fa-book-open"></i> 規則宣讀</h2>
                 <p class="sub">請將以下規則完整複製，並分別提供給兩位 AI 選手，請它們回覆「我已完整閱讀比賽規則並同意參賽」。</p>
-                <div class="rule-box" id="ruleDisplay"></div>
+                <div class="rule-box" id="ruleDisplay">載入規則中...</div>
                 <button class="btn btn-primary" onclick="copyRuleToClipboard()"><i class="fas fa-copy"></i> 複製規則</button>
                 <div style="margin-top: 20px;">
                     <label><input type="checkbox" id="ruleConfirm" onchange="toggleStep1Next()"> 我已將規則提供給雙方 AI，並收到確認回覆</label>
@@ -267,7 +267,7 @@
                     <button class="btn btn-primary" onclick="saveReplays()"><i class="fas fa-save"></i> 儲存復盤</button>
                 </div>
 
-                <button id="step4Next" class="btn btn-success" onclick="goToStep(5)"><i class="fas fa-exchange-alt"></i> 進入交換復盤</button>
+                <button id="step4Next" class="btn btn-success" disabled onclick="goToStep(5)"><i class="fas fa-exchange-alt"></i> 進入交換復盤</button>
             </div>
         </section>
 
