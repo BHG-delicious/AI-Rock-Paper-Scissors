@@ -29,7 +29,7 @@ let gameState = {
 // ==================== 載入規則 ====================
 async function loadRules() {
     try {
-        const response = await fetch('/rules.txt');
+        const response = await fetch('/AI-Rock-Paper-Scissors/rules.txt');
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         rulesText = await response.text();
         document.getElementById('ruleDisplay').textContent = rulesText;
