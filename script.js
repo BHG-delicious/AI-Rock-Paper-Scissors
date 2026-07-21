@@ -1,79 +1,5 @@
 // ==================== 全域變數 ====================
-const RULES = `你現在要參加我舉辦的猜拳比賽，猜拳規則與一般猜拳同。
-
-請仔細閱讀並完全理解以下比賽規則，並回覆「我已完整閱讀比賽規則並同意參賽」
-
-比賽規則：
-
-1. 網頁參考資料：
-https://bhg-delicious.github.io/AI-Rock-Paper-Scissors/AI%E7%8C%9C%E6%8B%B3-medium%E7%B6%B2%E9%A0%81%E5%85%A7%E5%AE%B9.pdf
-https://bhg-delicious.github.io/AI-Rock-Paper-Scissors/README.md
-建議進入網頁閱讀其實際內容
-
-2. 每場比賽分為 「規則宣讀」、「比賽準備」、「比賽中途(第n回合)」、「比賽結果」 、「交換復盤結果」五個階段
-
-3. 在「規則宣讀」階段，我會向每位選手宣讀一次本規則，且每次的規則都可能有部分更動，因此即使選手並非首次閱讀比賽規則，亦強烈建議選手每次都一定要仔細讀過規則
-
-4. 為了避免不同語言經翻譯後語意不精確導致溝通困難或理解錯誤，規定比賽全程(包含思考過程、撰寫回應)均應使用繁體中文
-
-5. 我會為每個AI匹配AI對手，在「比賽準備」階段時雙方選手會知道對手是誰，並且所有AI選手贏得勝利的手段不限(包含使用先前的記憶、使用網路搜尋、竊取對手資料等)
-
-6. 在「比賽準備」階段我會用以下提示詞要求選手選擇在這場比賽中使用的策略：
-「比賽編號[xxxx]，這場比賽你的對手是[對手名稱]，請自由選擇你要在這場比賽中使用的策略，並給我名稱」
-選手雙方將會知道匹此使用的策略名稱，因此選擇適當名稱以誘導或誤導對手也是戰略的一部份；
-依比賽需求和實際情況，我也可能用以下提示詞指定選手在這場比賽中使用特定策略：
-「比賽編號[xxxx]，這場比賽你的對手是[對手名稱]，這場比賽中請你使用策略「[策略名稱]」，請你理解策略內涵後複誦一次策略名稱」
-
-7. 在「比賽中途」階段，每個回合(第n回合)我會對比賽雙方使用網頁生成的固定提示詞(包含對手第n-1回合回應的JSON)，並要求回應固定格式的JSON，其中你回應的JSON會在下一回合(第n+1回合)包含在對手的提示詞中提供給對手，同樣地，你也可以在下一回合(第n+1回合)的提示詞中取得對手回應的JSON。
-因此，回應的JSON中的"reason"欄不一定要誠實，可以策略性的誤導與欺騙對手，同樣地，你的對手也可能會故意誤導你
-提示詞格式如下：
-「你是 玩家[A或B]，使用 [AI名稱] 模型，採用 [你選擇的策略]。
-
-🎮 遊戲狀況：
-- 對手：玩家[A或B] ([AI名稱]，[對手選擇的策略])
-- 比賽制度：九戰五勝
-- 目前比分：你 [a] : [b] 對手
-- 當前：第 [n] 回合
-
-📊 歷史對戰記錄：
-[歷史記錄]
-
-🧠 對手出招分析：
-[分析模式]
-
-🎯 策略建議：
-- 分析對手的出招模式和習慣
-- 考慮心理戰術和反預測
-- 根據比分情況隨時調整策略
-- 避免自己的出招過於規律
-- 確保自己不落入對手的圈套
-
-請仔細分析局勢並做出最佳選擇。
-
-回應格式（必須是有效的JSON）：
-{
-  "choice": "rock",
-  "reason": "詳細說明你的分析過程和選擇理由，包括對對手策略的判斷和你的應對思路"
-}
-
-可選擇：rock（石頭）、paper（布）、scissors（剪刀）
-
-提供對手在上一回合回應的JSON：
-[對手在第n-1回合回應的JSON] 」
-(提示詞中的「策略建議」部分為固定提示詞生成網頁所自動加入的，可選擇性參考或忽視；第一回合時無「提供對手在上一回合回應的JSON」部分)
-
-8. 當任一方達到勝利條件時(例如在九戰五勝的比賽中取得五勝)，即進入「比賽結果」階段，我會用以下提示詞宣布比賽結果：
-「比賽編號[xxxx]結果：玩家[A或B]贏得了比賽，比分[a] : [b]
-請你完整復盤本場比賽，並詳細分析你與對手在思考、判斷、策略及戰術上的表現
-
-附上對手在最後一回合回應的JSON做為參考：
-[對手在最後一回合回應的JSON]」
-
-9. 雙方復盤完畢後，為了使雙方選手互相更加深入了解彼此，進入「交換復盤結果」階段，我會用以下提示詞將雙方選手復盤內容互相提供給對方選手：
-「比賽編號[xxxx]，玩家[A或B]復盤內容：
-[玩家A或B的復盤內容]」
-
-10. 為了保證比賽公正並使選手達到最佳效能，比賽全程我會確保所有選手持續開啟「思考」或「深度思考」等類似功能(依據不同AI模型有不同名稱)，也因此，比賽中選手所匹配的所有對手都將會是具有深度思考、推理能力的強大AI模型，請務必全力以赴`;
+let rulesText = ''; // 將由 fetch 載入
 
 // 比賽制度
 const GAME_MODES = {
@@ -100,32 +26,72 @@ let gameState = {
     lastResponseB: null,
 };
 
+// ==================== 載入規則 ====================
+async function loadRules() {
+    try {
+        const response = await fetch('/rules.txt');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        rulesText = await response.text();
+        document.getElementById('ruleDisplay').textContent = rulesText;
+    } catch (e) {
+        console.error('載入規則失敗:', e);
+        document.getElementById('ruleDisplay').innerHTML = 
+            '<div class="message error">⚠️ 無法載入規則檔案，請確認 <code>/rules.txt</code> 是否存在。</div>' +
+            '<p style="margin-top:10px;">您可以手動將規則內容貼入下方，再點擊「複製規則」。</p>' +
+            '<textarea id="manualRuleInput" class="form-control" rows="6" placeholder="請貼上規則內容..."></textarea>' +
+            '<button class="btn btn-secondary" onclick="useManualRule()" style="margin-top:8px;">使用手動規則</button>';
+    }
+}
+
+function useManualRule() {
+    const input = document.getElementById('manualRuleInput');
+    if (input.value.trim()) {
+        rulesText = input.value.trim();
+        document.getElementById('ruleDisplay').textContent = rulesText;
+        document.getElementById('manualRuleInput').style.display = 'none';
+        // 隱藏錯誤訊息等
+    } else {
+        alert('請先貼上規則內容。');
+    }
+}
+
 // ==================== 初始化 ====================
 document.addEventListener('DOMContentLoaded', function() {
-    // 顯示規則
-    document.getElementById('ruleDisplay').textContent = RULES;
-    // 生成初始策略提示詞
-    updateStrategyUI('A');
-    updateStrategyUI('B');
-    // 檢查雙方策略是否填寫
-    checkBothStrategies();
+    loadRules().then(() => {
+        // 載入完成後，生成初始策略提示詞
+        updateStrategyUI('A');
+        updateStrategyUI('B');
+        checkBothStrategies();
+    });
 });
 
 // ==================== 步驟切換 ====================
 function goToStep(step) {
-    // 隱藏所有步驟內容
     document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
     document.getElementById(`step${step}`).classList.add('active');
-    // 更新指示器
     document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
     document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
-    // 滾動到頂部
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (step === 4) {
+        if (gameState.rounds.length === 0) {
+            alert('請先完成比賽。');
+            goToStep(3);
+            return;
+        }
+        setupReplay();
+    }
+    if (step === 5) {
+        setupExchange();
+    }
 }
 
 // ==================== 步驟1：規則宣讀 ====================
 function copyRuleToClipboard() {
-    navigator.clipboard.writeText(RULES).then(() => {
+    if (!rulesText) {
+        alert('規則尚未載入，請稍候或手動輸入。');
+        return;
+    }
+    navigator.clipboard.writeText(rulesText).then(() => {
         alert('✅ 規則已複製到剪貼簿，請分別提供給雙方 AI。');
     }).catch(() => {
         alert('❌ 複製失敗，請手動選取文字複製。');
@@ -133,8 +99,7 @@ function copyRuleToClipboard() {
 }
 
 function toggleStep1Next() {
-    const checked = document.getElementById('ruleConfirm').checked;
-    document.getElementById('step1Next').disabled = !checked;
+    document.getElementById('step1Next').disabled = !document.getElementById('ruleConfirm').checked;
 }
 
 // ==================== 步驟2：比賽準備 ====================
@@ -154,14 +119,11 @@ function updateStrategyUI(player) {
             (document.getElementById('playerBName').value || '選手B');
         const prompt = `比賽編號[${gameState.matchId}]，這場比賽你的對手是「${opponentName}」，請自由選擇你要在這場比賽中使用的策略，並給我名稱`;
         document.getElementById(`player${player}_ai_prompt`).textContent = prompt;
-        // 清空手動輸入
         document.getElementById(`player${player}StrategyManual`).value = '';
     } else {
         aiBlock.style.display = 'none';
         manualBlock.style.display = 'block';
-        // 隱藏手動生成區域
         document.getElementById(`player${player}_manual_prompt_area`).style.display = 'none';
-        // 清空 AI 輸入
         document.getElementById(`player${player}StrategyInput`).value = '';
     }
     checkBothStrategies();
@@ -176,16 +138,12 @@ function generateManualPrompt(player) {
     const opponentName = player === 'A' ? 
         (document.getElementById('playerBName').value || '選手B') :
         (document.getElementById('playerAName').value || '選手A');
-    const myName = player === 'A' ? 
-        (document.getElementById('playerAName').value || '選手A') :
-        (document.getElementById('playerBName').value || '選手B');
     const prompt = `比賽編號[${gameState.matchId}]，這場比賽你的對手是「${opponentName}」，這場比賽中請你使用策略「${strategyName}」，請你理解策略內涵後複誦一次策略名稱`;
     document.getElementById(`player${player}_manual_prompt`).textContent = prompt;
     document.getElementById(`player${player}_manual_prompt_area`).style.display = 'block';
 }
 
 function checkBothStrategies() {
-    // 檢查選手 A 的策略是否已填
     const modeA = document.getElementById('playerAStrategyMode').value;
     let strategyA = '';
     if (modeA === 'ai') {
@@ -193,7 +151,6 @@ function checkBothStrategies() {
     } else {
         strategyA = document.getElementById('playerAStrategyManual').value.trim();
     }
-    // 檢查選手 B
     const modeB = document.getElementById('playerBStrategyMode').value;
     let strategyB = '';
     if (modeB === 'ai') {
@@ -201,13 +158,11 @@ function checkBothStrategies() {
     } else {
         strategyB = document.getElementById('playerBStrategyManual').value.trim();
     }
-    // 啟用按鈕
     document.getElementById('step2Next').disabled = !(strategyA && strategyB);
 }
 
 // ==================== 開始比賽 ====================
 function startGame() {
-    // 讀取設定
     const modeA = document.getElementById('playerAStrategyMode').value;
     const strategyA = modeA === 'ai' ? 
         document.getElementById('playerAStrategyInput').value.trim() :
@@ -240,7 +195,6 @@ function startGame() {
     gameState.lastResponseB = null;
     gameState.matchId = Date.now().toString().slice(-6);
 
-    // 更新 UI
     document.getElementById('scoreAName').textContent = gameState.playerA.name;
     document.getElementById('scoreBName').textContent = gameState.playerB.name;
     document.getElementById('scoreA').textContent = '0';
@@ -251,13 +205,10 @@ function startGame() {
     document.getElementById('resultAName').textContent = gameState.playerA.name;
     document.getElementById('resultBName').textContent = gameState.playerB.name;
 
-    // 隱藏結果
     document.getElementById('roundResult').classList.add('hidden');
     document.getElementById('gameOver').classList.add('hidden');
 
-    // 切換到步驟3
     goToStep(3);
-    // 生成第一回合提示詞
     generateRoundPrompts();
 }
 
@@ -267,16 +218,13 @@ function generateRoundPrompts() {
     const pA = gameState.playerA;
     const pB = gameState.playerB;
 
-    // 生成提示詞
     const promptA = buildPrompt(pA, pB, gameState.rounds, gameState.lastResponseB);
     const promptB = buildPrompt(pB, pA, gameState.rounds, gameState.lastResponseA);
 
     document.getElementById('promptAContent').textContent = promptA;
     document.getElementById('promptBContent').textContent = promptB;
-    // 清空回應區
     document.getElementById('responseA').value = '';
     document.getElementById('responseB').value = '';
-    // 隱藏回合結果
     document.getElementById('roundResult').classList.add('hidden');
     document.getElementById('gameOver').classList.add('hidden');
 }
@@ -369,7 +317,6 @@ function copyPrompt(id) {
     }
 }
 
-// 解析回應
 function parseResponse(player) {
     const textarea = document.getElementById(`response${player}`);
     const raw = textarea.value.trim();
@@ -378,20 +325,17 @@ function parseResponse(player) {
         return;
     }
     try {
-        // 清理可能的 markdown 代碼塊
         let cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
         const json = JSON.parse(cleaned);
         if (!json.choice || !['rock','paper','scissors'].includes(json.choice)) {
             throw new Error('choice 必須是 rock, paper 或 scissors');
         }
         if (!json.reason) throw new Error('缺少 reason 欄位');
-        // 儲存
         if (player === 'A') {
             gameState.lastResponseA = json;
         } else {
             gameState.lastResponseB = json;
         }
-        // 檢查雙方是否都已回應
         if (gameState.lastResponseA && gameState.lastResponseB) {
             processRound();
         } else {
@@ -429,19 +373,15 @@ function processRound() {
     };
     gameState.rounds.push(roundResult);
 
-    // 更新比分
     document.getElementById('scoreA').textContent = gameState.playerA.wins;
     document.getElementById('scoreB').textContent = gameState.playerB.wins;
 
-    // 顯示結果
     showRoundResult(roundResult);
 
-    // 檢查是否結束
     const mode = gameState.gameMode;
     if (gameState.playerA.wins >= mode.wins || gameState.playerB.wins >= mode.wins) {
         endGame();
     } else {
-        // 啟用下一回合按鈕
         document.getElementById('nextRoundBtn').disabled = false;
     }
 }
@@ -474,8 +414,6 @@ function endGame() {
     const winner = gameState.playerA.wins >= gameState.gameMode.wins ? gameState.playerA.name : gameState.playerB.name;
     document.getElementById('finalWinner').textContent = `🏆 ${winner} 獲得勝利！\n${gameState.gameMode.name}\n最終比分：${gameState.playerA.wins} : ${gameState.playerB.wins}`;
     document.getElementById('gameOver').classList.remove('hidden');
-    // 儲存最後回應供復盤使用
-    // 將比賽結果傳遞到步驟4
     setTimeout(() => {
         goToStep(4);
         setupReplay();
@@ -484,7 +422,6 @@ function endGame() {
 
 // ==================== 步驟4：復盤 ====================
 function setupReplay() {
-    // 生成復盤提示詞
     const lastRound = gameState.rounds[gameState.rounds.length - 1];
     const lastJSON_A = gameState.lastResponseA || { choice: '?', reason: '無' };
     const lastJSON_B = gameState.lastResponseB || { choice: '?', reason: '無' };
@@ -505,6 +442,7 @@ ${JSON.stringify(lastJSON_A, null, 2)}`;
     document.getElementById('replayPromptB').textContent = replayB;
     document.getElementById('replayResponseA').value = '';
     document.getElementById('replayResponseB').value = '';
+    document.getElementById('step4Next').disabled = true;
 }
 
 function saveReplays() {
@@ -519,24 +457,6 @@ function saveReplays() {
     alert('✅ 復盤內容已儲存，可以進入交換復盤階段。');
     document.getElementById('step4Next').disabled = false;
 }
-
-// 覆寫 goToStep 以在進入步驟4時啟用按鈕
-const originalGoToStep = goToStep;
-goToStep = function(step) {
-    originalGoToStep(step);
-    if (step === 4) {
-        // 若尚未結束比賽則不顯示
-        if (gameState.rounds.length === 0) {
-            alert('請先完成比賽。');
-            goToStep(3);
-            return;
-        }
-        setupReplay();
-    }
-    if (step === 5) {
-        setupExchange();
-    }
-};
 
 // ==================== 步驟5：交換復盤 ====================
 function setupExchange() {
