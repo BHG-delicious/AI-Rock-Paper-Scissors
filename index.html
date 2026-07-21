@@ -2,164 +2,309 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI剪刀石頭布對戰</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI 剪刀石頭布 - 競賽版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
+        <!-- 標題 -->
         <header>
-            <h1>🤖 AI剪刀石頭布對戰 🤖</h1>
-            <p>讓兩個AI模型互相對戰</p>
+            <h1><i class="fas fa-robot"></i> AI 剪刀石頭布 · 競賽版</h1>
+            <p>五階段完整對戰 · 支援策略博弈與復盤</p>
         </header>
 
-        <!-- 設定區域 -->
-        <section id="setup-section" class="section">
-            <h2>⚙️ 設定AI玩家</h2>
-            
-            <!-- 比賽制度選擇 -->
-            <div class="game-mode-selection">
-                <h3>🏆 比賽制度</h3>
-                <select id="game-mode">
-                    <option value="1">一戰決勝負</option>
-                    <option value="2">三戰兩勝</option>
-                    <option value="3" selected>五戰三勝</option>
-                    <option value="4">七戰四勝</option>
-                    <option value="5">九戰五勝</option>
-                </select>
-            </div>
-            
-            <div class="players-setup">
-                <div class="player-config">
-                    <h3>玩家 A</h3>
-                    <div class="model-selection">
-                        <select id="playerA-model" onchange="updateModelLink('A')">
-                            <option value="claude">Claude</option>
-                            <option value="chatgpt">ChatGPT</option>
-                            <option value="gemini">Gemini</option>
-                            <option value="deepseek">DeepSeek</option>
-                            <option value="perplexity">Perplexity</option>
-                            <option value="other">其他</option>
-                        </select>
-                        <a id="playerA-model-link" href="#" target="_blank" class="model-link hidden">🔗 前往模型</a>
-                    </div>
-                    <input type="text" id="playerA-strategy" placeholder="策略描述 (例: 分析型)" value="分析型策略">
+        <!-- 步驟指示器 -->
+        <div class="step-indicator">
+            <div class="step active" data-step="1"><span class="step-num">1</span> 規則宣讀</div>
+            <div class="step" data-step="2"><span class="step-num">2</span> 比賽準備</div>
+            <div class="step" data-step="3"><span class="step-num">3</span> 比賽中途</div>
+            <div class="step" data-step="4"><span class="step-num">4</span> 比賽結果</div>
+            <div class="step" data-step="5"><span class="step-num">5</span> 交換復盤</div>
+        </div>
+
+        <!-- ===== 步驟 1：規則宣讀 ===== -->
+        <section id="step1" class="step-content active">
+            <div class="card">
+                <h2><i class="fas fa-book-open"></i> 規則宣讀</h2>
+                <p class="sub">請將以下規則完整複製，並分別提供給兩位 AI 選手，請它們回覆「我已完整閱讀比賽規則並同意參賽」。</p>
+                <div class="rule-box" id="ruleDisplay"></div>
+                <button class="btn btn-primary" onclick="copyRuleToClipboard()"><i class="fas fa-copy"></i> 複製規則</button>
+                <div style="margin-top: 20px;">
+                    <label><input type="checkbox" id="ruleConfirm" onchange="toggleStep1Next()"> 我已將規則提供給雙方 AI，並收到確認回覆</label>
                 </div>
-                
-                <div class="vs-divider">VS</div>
-                
-                <div class="player-config">
-                    <h3>玩家 B</h3>
-                    <div class="model-selection">
-                        <select id="playerB-model" onchange="updateModelLink('B')">
-                            <option value="chatgpt">ChatGPT</option>
-                            <option value="claude">Claude</option>
-                            <option value="gemini">Gemini</option>
-                            <option value="deepseek">DeepSeek</option>
-                            <option value="perplexity">Perplexity</option>
-                            <option value="other">其他</option>
-                        </select>
-                        <a id="playerB-model-link" href="#" target="_blank" class="model-link hidden">🔗 前往模型</a>
-                    </div>
-                    <input type="text" id="playerB-strategy" placeholder="策略描述 (例: 進攻型)" value="進攻型策略">
-                </div>
+                <button id="step1Next" class="btn btn-success" disabled onclick="goToStep(2)"><i class="fas fa-arrow-right"></i> 下一步</button>
             </div>
-            
-            <button id="start-game-btn" class="start-btn">🎮 開始新比賽</button>
         </section>
 
-        <!-- 對戰區域 -->
-        <section id="battle-section" class="section hidden">
-            <div class="match-info">
-                <h2>🏆 比賽進行中</h2>
-                <div class="scoreboard">
-                    <div class="score-item">
-                        <span id="playerA-display-name">玩家A</span>
-                        <span id="scoreA" class="score">0</span>
-                    </div>
-                    <div class="score-divider">:</div>
-                    <div class="score-item">
-                        <span id="scoreB" class="score">0</span>
-                        <span id="playerB-display-name">玩家B</span>
-                    </div>
-                </div>
-                <p class="round-info">第 <span id="current-round">1</span> 回合</p>
-            </div>
+        <!-- ===== 步驟 2：比賽準備 ===== -->
+        <section id="step2" class="step-content">
+            <div class="card">
+                <h2><i class="fas fa-users-cog"></i> 比賽準備</h2>
+                <p class="sub">設定兩位 AI 選手，並為每人選擇策略產生方式。</p>
 
-            <!-- 同時顯示兩個Prompt -->
-            <div class="prompts-container">
-                <div class="prompt-section">
-                    <h3 id="promptA-title">🤖 玩家A Prompt</h3>
-                    <div class="prompt-box">
-                        <pre id="promptA-content"></pre>
-                        <button class="copy-btn" onclick="copyPrompt('A', this)">📋 複製Prompt</button>
+                <!-- 選手 A 設定 -->
+                <div class="player-setup">
+                    <h3><i class="fas fa-user-astronaut"></i> 選手 A</h3>
+                    <div class="form-group">
+                        <label>名稱</label>
+                        <input type="text" id="playerAName" value="DeepSeek" class="form-control">
                     </div>
-                    
-                    <div class="response-section">
-                        <h4>📥 貼上玩家A回應</h4>
-                        <textarea id="responseA" placeholder='貼上JSON格式回應，例：{"choice":"rock","reason":"基於分析..."}'></textarea>
-                        <button class="parse-btn" onclick="parseResponse('A')">✅ 解析回應</button>
+                    <div class="form-group">
+                        <label>AI 模型</label>
+                        <select id="playerAModel" class="form-control">
+                            <option value="DeepSeek">DeepSeek</option>
+                            <option value="Gemini">Gemini</option>
+                            <option value="Claude">Claude</option>
+                            <option value="ChatGPT">ChatGPT</option>
+                            <option value="其他">其他</option>
+                        </select>
                     </div>
-                </div>
-
-                <div class="prompt-section">
-                    <h3 id="promptB-title">🤖 玩家B Prompt</h3>
-                    <div class="prompt-box">
-                        <pre id="promptB-content"></pre>
-                        <button class="copy-btn" onclick="copyPrompt('B', this)">📋 複製Prompt</button>
+                    <div class="form-group">
+                        <label>策略產生方式</label>
+                        <select id="playerAStrategyMode" class="form-control" onchange="updateStrategyUI('A')">
+                            <option value="ai">AI 選擇策略</option>
+                            <option value="manual">指定策略</option>
+                        </select>
                     </div>
-                    
-                    <div class="response-section">
-                        <h4>📥 貼上玩家B回應</h4>
-                        <textarea id="responseB" placeholder='貼上JSON格式回應，例：{"choice":"paper","reason":"採用進攻策略..."}'></textarea>
-                        <button class="parse-btn" onclick="parseResponse('B')">✅ 解析回應</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 回合結果 -->
-            <div id="round-result" class="round-result hidden">
-                <h3>🎯 本回合結果</h3>
-                <div class="battle-result">
-                    <div class="player-choice">
-                        <h4 id="resultA-name">玩家A</h4>
-                        <div class="choice-display">
-                            <span id="resultA-choice" class="choice-icon">❓</span>
-                            <p id="resultA-reason" class="reason"></p>
+                    <!-- AI 選擇策略區塊 -->
+                    <div id="playerA_ai" class="strategy-block">
+                        <p>請將以下提示詞複製給選手 A，讓它自行選擇策略名稱：</p>
+                        <div class="prompt-box">
+                            <pre id="playerA_ai_prompt"></pre>
+                            <button class="btn btn-secondary" onclick="copyPrompt('A_ai')"><i class="fas fa-copy"></i> 複製提示詞</button>
+                        </div>
+                        <div class="form-group">
+                            <label>選手 A 回覆的策略名稱</label>
+                            <input type="text" id="playerAStrategyInput" class="form-control" placeholder="請貼上 AI 回覆的策略名稱" oninput="checkBothStrategies()">
                         </div>
                     </div>
-                    
-                    <div class="result-center">
-                        <div id="winner-announcement" class="winner"></div>
-                    </div>
-                    
-                    <div class="player-choice">
-                        <h4 id="resultB-name">玩家B</h4>
-                        <div class="choice-display">
-                            <span id="resultB-choice" class="choice-icon">❓</span>
-                            <p id="resultB-reason" class="reason"></p>
+                    <!-- 指定策略區塊 -->
+                    <div id="playerA_manual" class="strategy-block" style="display:none;">
+                        <div class="form-group">
+                            <label>指定策略名稱</label>
+                            <input type="text" id="playerAStrategyManual" class="form-control" placeholder="請輸入你要指定的策略名稱" oninput="checkBothStrategies()">
+                        </div>
+                        <button class="btn btn-secondary" onclick="generateManualPrompt('A')"><i class="fas fa-file-alt"></i> 生成提示詞</button>
+                        <div id="playerA_manual_prompt_area" style="margin-top:10px; display:none;">
+                            <div class="prompt-box">
+                                <pre id="playerA_manual_prompt"></pre>
+                                <button class="btn btn-secondary" onclick="copyPrompt('A_manual')"><i class="fas fa-copy"></i> 複製提示詞</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <button id="next-round-btn" class="next-btn">➡️ 下一回合</button>
-            </div>
 
-            <!-- 遊戲結束 -->
-            <div id="game-over" class="game-over hidden">
-                <h2>🏆 比賽結束！</h2>
-                <div id="final-winner" class="final-winner"></div>
-                <button id="new-game-btn" class="start-btn">🔄 開始新比賽</button>
-                <button id="view-history-btn" class="history-btn">📊 查看詳細記錄</button>
+                <!-- 選手 B 設定 -->
+                <div class="player-setup">
+                    <h3><i class="fas fa-user-astronaut"></i> 選手 B</h3>
+                    <div class="form-group">
+                        <label>名稱</label>
+                        <input type="text" id="playerBName" value="Gemini" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>AI 模型</label>
+                        <select id="playerBModel" class="form-control">
+                            <option value="Gemini">Gemini</option>
+                            <option value="DeepSeek">DeepSeek</option>
+                            <option value="Claude">Claude</option>
+                            <option value="ChatGPT">ChatGPT</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>策略產生方式</label>
+                        <select id="playerBStrategyMode" class="form-control" onchange="updateStrategyUI('B')">
+                            <option value="ai">AI 選擇策略</option>
+                            <option value="manual">指定策略</option>
+                        </select>
+                    </div>
+                    <!-- AI 選擇策略區塊 -->
+                    <div id="playerB_ai" class="strategy-block">
+                        <p>請將以下提示詞複製給選手 B，讓它自行選擇策略名稱：</p>
+                        <div class="prompt-box">
+                            <pre id="playerB_ai_prompt"></pre>
+                            <button class="btn btn-secondary" onclick="copyPrompt('B_ai')"><i class="fas fa-copy"></i> 複製提示詞</button>
+                        </div>
+                        <div class="form-group">
+                            <label>選手 B 回覆的策略名稱</label>
+                            <input type="text" id="playerBStrategyInput" class="form-control" placeholder="請貼上 AI 回覆的策略名稱" oninput="checkBothStrategies()">
+                        </div>
+                    </div>
+                    <!-- 指定策略區塊 -->
+                    <div id="playerB_manual" class="strategy-block" style="display:none;">
+                        <div class="form-group">
+                            <label>指定策略名稱</label>
+                            <input type="text" id="playerBStrategyManual" class="form-control" placeholder="請輸入你要指定的策略名稱" oninput="checkBothStrategies()">
+                        </div>
+                        <button class="btn btn-secondary" onclick="generateManualPrompt('B')"><i class="fas fa-file-alt"></i> 生成提示詞</button>
+                        <div id="playerB_manual_prompt_area" style="margin-top:10px; display:none;">
+                            <div class="prompt-box">
+                                <pre id="playerB_manual_prompt"></pre>
+                                <button class="btn btn-secondary" onclick="copyPrompt('B_manual')"><i class="fas fa-copy"></i> 複製提示詞</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 賽制選擇 -->
+                <div class="form-group">
+                    <label>比賽制度</label>
+                    <select id="gameMode" class="form-control">
+                        <option value="1">一戰決勝負</option>
+                        <option value="2">三戰兩勝</option>
+                        <option value="3" selected>五戰三勝</option>
+                        <option value="4">七戰四勝</option>
+                        <option value="5">九戰五勝</option>
+                    </select>
+                </div>
+
+                <button id="step2Next" class="btn btn-success" disabled onclick="startGame()"><i class="fas fa-flag-checkered"></i> 開始比賽</button>
             </div>
         </section>
 
-        <!-- 歷史記錄區域 -->
-        <section id="history-section" class="section hidden">
-            <h2>📊 對戰歷史</h2>
-            <div id="history-list"></div>
-            <button id="back-to-game-btn" class="back-btn">⬅️ 返回遊戲</button>
+        <!-- ===== 步驟 3：比賽中途 ===== -->
+        <section id="step3" class="step-content">
+            <div class="card">
+                <h2><i class="fas fa-fist-raised"></i> 比賽中途</h2>
+                <div id="matchInfo">
+                    <div class="scoreboard">
+                        <div class="score-item"><span id="scoreAName">A</span> <span id="scoreA" class="score">0</span></div>
+                        <div class="score-divider">:</div>
+                        <div class="score-item"><span id="scoreB" class="score">0</span> <span id="scoreBName">B</span></div>
+                    </div>
+                    <p class="round-info">第 <span id="currentRound">1</span> 回合</p>
+                </div>
+
+                <div class="prompts-container">
+                    <!-- 選手 A 提示詞 -->
+                    <div class="prompt-section">
+                        <h3 id="promptATitle">🤖 選手 A Prompt</h3>
+                        <div class="prompt-box">
+                            <pre id="promptAContent"></pre>
+                            <button class="btn btn-secondary" onclick="copyPrompt('A_round')"><i class="fas fa-copy"></i> 複製提示詞</button>
+                        </div>
+                        <div class="response-section">
+                            <h4>📥 貼上選手 A 回應</h4>
+                            <textarea id="responseA" class="form-control" rows="4" placeholder='貼上 JSON，例：{"choice":"rock","reason":"..."}'></textarea>
+                            <button class="btn btn-primary" onclick="parseResponse('A')"><i class="fas fa-check"></i> 解析回應</button>
+                        </div>
+                    </div>
+                    <!-- 選手 B 提示詞 -->
+                    <div class="prompt-section">
+                        <h3 id="promptBTitle">🤖 選手 B Prompt</h3>
+                        <div class="prompt-box">
+                            <pre id="promptBContent"></pre>
+                            <button class="btn btn-secondary" onclick="copyPrompt('B_round')"><i class="fas fa-copy"></i> 複製提示詞</button>
+                        </div>
+                        <div class="response-section">
+                            <h4>📥 貼上選手 B 回應</h4>
+                            <textarea id="responseB" class="form-control" rows="4" placeholder='貼上 JSON，例：{"choice":"paper","reason":"..."}'></textarea>
+                            <button class="btn btn-primary" onclick="parseResponse('B')"><i class="fas fa-check"></i> 解析回應</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 回合結果 -->
+                <div id="roundResult" class="round-result hidden">
+                    <h3>🎯 本回合結果</h3>
+                    <div class="battle-result">
+                        <div class="player-choice">
+                            <h4 id="resultAName">A</h4>
+                            <div class="choice-display">
+                                <span id="resultAChoice" class="choice-icon">❓</span>
+                                <p id="resultAReason" class="reason"></p>
+                            </div>
+                        </div>
+                        <div class="result-center">
+                            <div id="winnerAnnouncement" class="winner"></div>
+                        </div>
+                        <div class="player-choice">
+                            <h4 id="resultBName">B</h4>
+                            <div class="choice-display">
+                                <span id="resultBChoice" class="choice-icon">❓</span>
+                                <p id="resultBReason" class="reason"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="nextRoundBtn" class="btn btn-success" onclick="nextRound()"><i class="fas fa-forward"></i> 下一回合</button>
+                </div>
+
+                <!-- 遊戲結束（比賽結果階段將在此觸發） -->
+                <div id="gameOver" class="game-over hidden">
+                    <h2>🏆 比賽結束！</h2>
+                    <div id="finalWinner" class="final-winner"></div>
+                    <button class="btn btn-primary" onclick="goToStep(4)"><i class="fas fa-chart-line"></i> 查看復盤</button>
+                </div>
+            </div>
         </section>
+
+        <!-- ===== 步驟 4：比賽結果與復盤 ===== -->
+        <section id="step4" class="step-content">
+            <div class="card">
+                <h2><i class="fas fa-flag-checkered"></i> 比賽結果與復盤</h2>
+                <div id="resultSummary"></div>
+
+                <div class="prompt-section">
+                    <h3>📝 復盤提示詞</h3>
+                    <p>請將以下提示詞分別複製給兩位 AI，要求它們進行完整復盤：</p>
+                    <div class="prompt-box">
+                        <pre id="replayPromptA"></pre>
+                        <button class="btn btn-secondary" onclick="copyPrompt('replayA')"><i class="fas fa-copy"></i> 複製選手 A 復盤提示詞</button>
+                    </div>
+                    <div class="prompt-box" style="margin-top:10px;">
+                        <pre id="replayPromptB"></pre>
+                        <button class="btn btn-secondary" onclick="copyPrompt('replayB')"><i class="fas fa-copy"></i> 複製選手 B 復盤提示詞</button>
+                    </div>
+                </div>
+
+                <div class="response-section">
+                    <h4>📥 貼上選手 A 復盤內容</h4>
+                    <textarea id="replayResponseA" class="form-control" rows="6" placeholder="貼上選手 A 的復盤文字..."></textarea>
+                    <h4 style="margin-top:15px;">📥 貼上選手 B 復盤內容</h4>
+                    <textarea id="replayResponseB" class="form-control" rows="6" placeholder="貼上選手 B 的復盤文字..."></textarea>
+                    <button class="btn btn-primary" onclick="saveReplays()"><i class="fas fa-save"></i> 儲存復盤</button>
+                </div>
+
+                <button id="step4Next" class="btn btn-success" onclick="goToStep(5)"><i class="fas fa-exchange-alt"></i> 進入交換復盤</button>
+            </div>
+        </section>
+
+        <!-- ===== 步驟 5：交換復盤結果 ===== -->
+        <section id="step5" class="step-content">
+            <div class="card">
+                <h2><i class="fas fa-exchange-alt"></i> 交換復盤結果</h2>
+                <p>以下為雙方復盤內容，請複製提示詞並提供給對方 AI，讓它們互相閱讀對方的分析。</p>
+
+                <div id="replayDisplay">
+                    <div class="replay-box">
+                        <h4>選手 A 復盤</h4>
+                        <div id="replayTextA" class="replay-text"></div>
+                    </div>
+                    <div class="replay-box">
+                        <h4>選手 B 復盤</h4>
+                        <div id="replayTextB" class="replay-text"></div>
+                    </div>
+                </div>
+
+                <div class="prompt-section">
+                    <h3>📨 交換復盤提示詞</h3>
+                    <p>將以下提示詞複製給選手 A，讓它閱讀選手 B 的復盤；同樣複製給選手 B，讓它閱讀選手 A 的復盤。</p>
+                    <div class="prompt-box">
+                        <pre id="exchangePromptA"></pre>
+                        <button class="btn btn-secondary" onclick="copyPrompt('exchangeA')"><i class="fas fa-copy"></i> 複製給 A 的提示詞</button>
+                    </div>
+                    <div class="prompt-box" style="margin-top:10px;">
+                        <pre id="exchangePromptB"></pre>
+                        <button class="btn btn-secondary" onclick="copyPrompt('exchangeB')"><i class="fas fa-copy"></i> 複製給 B 的提示詞</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" onclick="resetAll()"><i class="fas fa-redo"></i> 重新開始</button>
+            </div>
+        </section>
+
     </div>
 
     <script src="script.js"></script>
