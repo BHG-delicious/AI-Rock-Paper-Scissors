@@ -9,7 +9,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- 標題 -->
         <header>
             <h1><i class="fas fa-robot"></i> AI 剪刀石頭布 · 競賽版</h1>
             <p>五階段完整對戰 · 支援策略博弈與復盤</p>
@@ -46,11 +45,7 @@
 
                 <!-- 選手 A 設定 -->
                 <div class="player-setup">
-                    <h3><i class="fas fa-user-astronaut"></i> 選手 A</h3>
-                    <div class="form-group">
-                        <label>名稱</label>
-                        <input type="text" id="playerAName" value="DeepSeek" class="form-control">
-                    </div>
+                    <h3><i class="fas fa-user-astronaut"></i> 玩家 A</h3>
                     <div class="form-group">
                         <label>AI 模型</label>
                         <select id="playerAModel" class="form-control">
@@ -98,11 +93,7 @@
 
                 <!-- 選手 B 設定 -->
                 <div class="player-setup">
-                    <h3><i class="fas fa-user-astronaut"></i> 選手 B</h3>
-                    <div class="form-group">
-                        <label>名稱</label>
-                        <input type="text" id="playerBName" value="Gemini" class="form-control">
-                    </div>
+                    <h3><i class="fas fa-user-astronaut"></i> 玩家 B</h3>
                     <div class="form-group">
                         <label>AI 模型</label>
                         <select id="playerBModel" class="form-control">
@@ -170,9 +161,9 @@
                 <h2><i class="fas fa-fist-raised"></i> 比賽中途</h2>
                 <div id="matchInfo">
                     <div class="scoreboard">
-                        <div class="score-item"><span id="scoreAName">A</span> <span id="scoreA" class="score">0</span></div>
+                        <div class="score-item"><span id="scoreAName">玩家A</span> <span id="scoreA" class="score">0</span></div>
                         <div class="score-divider">:</div>
-                        <div class="score-item"><span id="scoreB" class="score">0</span> <span id="scoreBName">B</span></div>
+                        <div class="score-item"><span id="scoreB" class="score">0</span> <span id="scoreBName">玩家B</span></div>
                     </div>
                     <p class="round-info">第 <span id="currentRound">1</span> 回合</p>
                 </div>
@@ -180,26 +171,26 @@
                 <div class="prompts-container">
                     <!-- 選手 A 提示詞 -->
                     <div class="prompt-section">
-                        <h3 id="promptATitle">🤖 選手 A Prompt</h3>
+                        <h3 id="promptATitle">🤖 玩家A Prompt</h3>
                         <div class="prompt-box">
                             <pre id="promptAContent"></pre>
                             <button class="btn btn-secondary" onclick="copyPrompt('A_round')"><i class="fas fa-copy"></i> 複製提示詞</button>
                         </div>
                         <div class="response-section">
-                            <h4>📥 貼上選手 A 回應</h4>
+                            <h4>📥 貼上玩家A 回應</h4>
                             <textarea id="responseA" class="form-control" rows="4" placeholder='貼上 JSON，例：{"choice":"rock","reason":"..."}'></textarea>
                             <button class="btn btn-primary" onclick="parseResponse('A')"><i class="fas fa-check"></i> 解析回應</button>
                         </div>
                     </div>
                     <!-- 選手 B 提示詞 -->
                     <div class="prompt-section">
-                        <h3 id="promptBTitle">🤖 選手 B Prompt</h3>
+                        <h3 id="promptBTitle">🤖 玩家B Prompt</h3>
                         <div class="prompt-box">
                             <pre id="promptBContent"></pre>
                             <button class="btn btn-secondary" onclick="copyPrompt('B_round')"><i class="fas fa-copy"></i> 複製提示詞</button>
                         </div>
                         <div class="response-section">
-                            <h4>📥 貼上選手 B 回應</h4>
+                            <h4>📥 貼上玩家B 回應</h4>
                             <textarea id="responseB" class="form-control" rows="4" placeholder='貼上 JSON，例：{"choice":"paper","reason":"..."}'></textarea>
                             <button class="btn btn-primary" onclick="parseResponse('B')"><i class="fas fa-check"></i> 解析回應</button>
                         </div>
@@ -211,7 +202,7 @@
                     <h3>🎯 本回合結果</h3>
                     <div class="battle-result">
                         <div class="player-choice">
-                            <h4 id="resultAName">A</h4>
+                            <h4 id="resultAName">玩家A</h4>
                             <div class="choice-display">
                                 <span id="resultAChoice" class="choice-icon">❓</span>
                                 <p id="resultAReason" class="reason"></p>
@@ -221,7 +212,7 @@
                             <div id="winnerAnnouncement" class="winner"></div>
                         </div>
                         <div class="player-choice">
-                            <h4 id="resultBName">B</h4>
+                            <h4 id="resultBName">玩家B</h4>
                             <div class="choice-display">
                                 <span id="resultBChoice" class="choice-icon">❓</span>
                                 <p id="resultBReason" class="reason"></p>
@@ -231,7 +222,7 @@
                     <button id="nextRoundBtn" class="btn btn-success" onclick="nextRound()"><i class="fas fa-forward"></i> 下一回合</button>
                 </div>
 
-                <!-- 遊戲結束（比賽結果階段將在此觸發） -->
+                <!-- 遊戲結束 -->
                 <div id="gameOver" class="game-over hidden">
                     <h2>🏆 比賽結束！</h2>
                     <div id="finalWinner" class="final-winner"></div>
@@ -251,19 +242,19 @@
                     <p>請將以下提示詞分別複製給兩位 AI，要求它們進行完整復盤：</p>
                     <div class="prompt-box">
                         <pre id="replayPromptA"></pre>
-                        <button class="btn btn-secondary" onclick="copyPrompt('replayA')"><i class="fas fa-copy"></i> 複製選手 A 復盤提示詞</button>
+                        <button class="btn btn-secondary" onclick="copyPrompt('replayA')"><i class="fas fa-copy"></i> 複製玩家A 復盤提示詞</button>
                     </div>
                     <div class="prompt-box" style="margin-top:10px;">
                         <pre id="replayPromptB"></pre>
-                        <button class="btn btn-secondary" onclick="copyPrompt('replayB')"><i class="fas fa-copy"></i> 複製選手 B 復盤提示詞</button>
+                        <button class="btn btn-secondary" onclick="copyPrompt('replayB')"><i class="fas fa-copy"></i> 複製玩家B 復盤提示詞</button>
                     </div>
                 </div>
 
                 <div class="response-section">
-                    <h4>📥 貼上選手 A 復盤內容</h4>
-                    <textarea id="replayResponseA" class="form-control" rows="6" placeholder="貼上選手 A 的復盤文字..."></textarea>
-                    <h4 style="margin-top:15px;">📥 貼上選手 B 復盤內容</h4>
-                    <textarea id="replayResponseB" class="form-control" rows="6" placeholder="貼上選手 B 的復盤文字..."></textarea>
+                    <h4>📥 貼上玩家A 復盤內容</h4>
+                    <textarea id="replayResponseA" class="form-control" rows="6" placeholder="貼上玩家A 的復盤文字..."></textarea>
+                    <h4 style="margin-top:15px;">📥 貼上玩家B 復盤內容</h4>
+                    <textarea id="replayResponseB" class="form-control" rows="6" placeholder="貼上玩家B 的復盤文字..."></textarea>
                     <button class="btn btn-primary" onclick="saveReplays()"><i class="fas fa-save"></i> 儲存復盤</button>
                 </div>
 
@@ -279,25 +270,25 @@
 
                 <div id="replayDisplay">
                     <div class="replay-box">
-                        <h4>選手 A 復盤</h4>
+                        <h4>玩家A 復盤</h4>
                         <div id="replayTextA" class="replay-text"></div>
                     </div>
                     <div class="replay-box">
-                        <h4>選手 B 復盤</h4>
+                        <h4>玩家B 復盤</h4>
                         <div id="replayTextB" class="replay-text"></div>
                     </div>
                 </div>
 
                 <div class="prompt-section">
                     <h3>📨 交換復盤提示詞</h3>
-                    <p>將以下提示詞複製給選手 A，讓它閱讀選手 B 的復盤；同樣複製給選手 B，讓它閱讀選手 A 的復盤。</p>
+                    <p>將以下提示詞複製給玩家A，讓它閱讀玩家B的復盤；同樣複製給玩家B，讓它閱讀玩家A的復盤。</p>
                     <div class="prompt-box">
                         <pre id="exchangePromptA"></pre>
-                        <button class="btn btn-secondary" onclick="copyPrompt('exchangeA')"><i class="fas fa-copy"></i> 複製給 A 的提示詞</button>
+                        <button class="btn btn-secondary" onclick="copyPrompt('exchangeA')"><i class="fas fa-copy"></i> 複製給玩家A 的提示詞</button>
                     </div>
                     <div class="prompt-box" style="margin-top:10px;">
                         <pre id="exchangePromptB"></pre>
-                        <button class="btn btn-secondary" onclick="copyPrompt('exchangeB')"><i class="fas fa-copy"></i> 複製給 B 的提示詞</button>
+                        <button class="btn btn-secondary" onclick="copyPrompt('exchangeB')"><i class="fas fa-copy"></i> 複製給玩家B 的提示詞</button>
                     </div>
                 </div>
 
