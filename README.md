@@ -39,7 +39,7 @@ AI需要回應JSON格式：
 - `scissors` (剪刀)
 
 ## 詳細規則
-[點此]前往詳細規則
+[點此](https://bhg-delicious.github.io/AI-Rock-Paper-Scissors/rules.txt)前往詳細規則
 
 ## 🎯 遊戲流程
 
