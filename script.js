@@ -1,7 +1,6 @@
 // ==================== 全域變數 ====================
-let rulesText = ''; // 將由 fetch 載入
+let rulesText = '';
 
-// 比賽制度
 const GAME_MODES = {
     1: { wins: 1, total: 1, name: '一戰決勝負' },
     2: { wins: 2, total: 3, name: '三戰兩勝' },
@@ -10,7 +9,6 @@ const GAME_MODES = {
     5: { wins: 5, total: 9, name: '九戰五勝' }
 };
 
-// 比賽狀態
 let gameState = {
     playerA: { name: '玩家A', model: '', strategy: '', wins: 0 },
     playerB: { name: '玩家B', model: '', strategy: '', wins: 0 },
@@ -27,7 +25,7 @@ let gameState = {
 // ==================== 載入規則 ====================
 async function loadRules() {
     try {
-        const response = await fetch('/AI-Rock-Paper-Scissors/rules.txt');
+        const response = await fetch('/rules.txt');
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         rulesText = await response.text();
         document.getElementById('ruleDisplay').textContent = rulesText;
@@ -52,24 +50,21 @@ function useManualRule() {
     }
 }
 
-// ==================== 生成比賽編號（規律格式） ====================
+// ==================== 生成比賽編號 ====================
 function generateMatchId() {
     const now = new Date();
     const y = String(now.getFullYear()).slice(2);
     const m = String(now.getMonth() + 1).padStart(2, '0');
     const d = String(now.getDate()).padStart(2, '0');
-    const dateStr = y + m + d; // 例如 240721
-
-    // 讀取 localStorage 中的序號
-    const today = dateStr;
+    const dateStr = y + m + d;
     let seq = parseInt(localStorage.getItem('matchSeq') || '0');
     const lastDate = localStorage.getItem('matchDate') || '';
-    if (lastDate !== today) {
-        seq = 0; // 換日重置
+    if (lastDate !== dateStr) {
+        seq = 0;
     }
     seq += 1;
     localStorage.setItem('matchSeq', String(seq));
-    localStorage.setItem('matchDate', today);
+    localStorage.setItem('matchDate', dateStr);
     const seqStr = String(seq).padStart(2, '0');
     return dateStr + seqStr;
 }
@@ -77,6 +72,8 @@ function generateMatchId() {
 // ==================== 初始化 ====================
 document.addEventListener('DOMContentLoaded', function() {
     loadRules().then(() => {
+        // 進入步驟2時會透過 updateStrategyUI 生成編號，但我們先確保顯示
+        // 但此時步驟2尚未顯示，沒關係
         updateStrategyUI('A');
         updateStrategyUI('B');
         checkBothStrategies();
@@ -103,7 +100,7 @@ function goToStep(step) {
     }
 }
 
-// ==================== 步驟1：規則宣讀 ====================
+// ==================== 步驟1 ====================
 function copyRuleToClipboard() {
     if (!rulesText) {
         alert('規則尚未載入，請稍候或手動輸入。');
@@ -120,17 +117,22 @@ function toggleStep1Next() {
     document.getElementById('step1Next').disabled = !document.getElementById('ruleConfirm').checked;
 }
 
-// ==================== 步驟2：比賽準備 ====================
+// ==================== 步驟2 ====================
 function updateStrategyUI(player) {
+    // 若尚未產生比賽編號，則生成
+    if (!gameState.matchId) {
+        gameState.matchId = generateMatchId();
+        document.getElementById('matchIdDisplay').textContent = gameState.matchId;
+    }
+
     const mode = document.getElementById(`player${player}StrategyMode`).value;
     const aiBlock = document.getElementById(`player${player}_ai`);
     const manualBlock = document.getElementById(`player${player}_manual`);
     if (mode === 'ai') {
         aiBlock.style.display = 'block';
         manualBlock.style.display = 'none';
-        // 固定名稱
         const opponentName = player === 'A' ? '玩家B' : '玩家A';
-        const prompt = `比賽編號[${gameState.matchId || '尚未產生'}]，這場比賽你的對手是「${opponentName}」，請自由選擇你要在這場比賽中使用的策略，並給我名稱`;
+        const prompt = `比賽編號[${gameState.matchId}]，這場比賽你的對手是「${opponentName}」，請自由選擇你要在這場比賽中使用的策略，並給我名稱`;
         document.getElementById(`player${player}_ai_prompt`).textContent = prompt;
         document.getElementById(`player${player}StrategyManual`).value = '';
     } else {
@@ -143,13 +145,17 @@ function updateStrategyUI(player) {
 }
 
 function generateManualPrompt(player) {
+    if (!gameState.matchId) {
+        gameState.matchId = generateMatchId();
+        document.getElementById('matchIdDisplay').textContent = gameState.matchId;
+    }
     const strategyName = document.getElementById(`player${player}StrategyManual`).value.trim();
     if (!strategyName) {
         alert('請先輸入策略名稱。');
         return;
     }
     const opponentName = player === 'A' ? '玩家B' : '玩家A';
-    const prompt = `比賽編號[${gameState.matchId || '尚未產生'}]，這場比賽你的對手是「${opponentName}」，這場比賽中請你使用策略「${strategyName}」，請你理解策略內涵後複誦一次策略名稱`;
+    const prompt = `比賽編號[${gameState.matchId}]，這場比賽你的對手是「${opponentName}」，這場比賽中請你使用策略「${strategyName}」，請你理解策略內涵後複誦一次策略名稱`;
     document.getElementById(`player${player}_manual_prompt`).textContent = prompt;
     document.getElementById(`player${player}_manual_prompt_area`).style.display = 'block';
 }
@@ -188,9 +194,12 @@ function startGame() {
         return;
     }
 
-    // 固定名稱
-    gameState.playerA.name = '玩家A';
-    gameState.playerB.name = '玩家B';
+    // 若 matchId 為空（理論上不會），則生成
+    if (!gameState.matchId) {
+        gameState.matchId = generateMatchId();
+        document.getElementById('matchIdDisplay').textContent = gameState.matchId;
+    }
+
     gameState.playerA.model = document.getElementById('playerAModel').value;
     gameState.playerA.strategy = strategyA;
     gameState.playerA.wins = 0;
@@ -205,9 +214,7 @@ function startGame() {
     gameState.rounds = [];
     gameState.lastResponseA = null;
     gameState.lastResponseB = null;
-    gameState.matchId = generateMatchId(); // 產生規律編號
 
-    // 更新比分板
     document.getElementById('scoreA').textContent = '0';
     document.getElementById('scoreB').textContent = '0';
     document.getElementById('currentRound').textContent = '1';
