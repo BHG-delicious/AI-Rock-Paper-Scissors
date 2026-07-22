@@ -9,13 +9,11 @@
 </head>
 <body>
     <div class="container">
-        <!-- 標題 -->
         <header>
             <h1><i class="fas fa-robot"></i> AI 剪刀石頭布 · 競賽版</h1>
             <p>五階段完整對戰 · 支援策略博弈與復盤</p>
         </header>
 
-        <!-- 步驟指示器 -->
         <div class="step-indicator">
             <div class="step active" data-step="1"><span class="step-num">1</span> 規則宣讀</div>
             <div class="step" data-step="2"><span class="step-num">2</span> 比賽準備</div>
@@ -24,7 +22,7 @@
             <div class="step" data-step="5"><span class="step-num">5</span> 交換復盤</div>
         </div>
 
-        <!-- ===== 步驟 1：規則宣讀 ===== -->
+        <!-- 步驟1 -->
         <section id="step1" class="step-content active">
             <div class="card">
                 <h2><i class="fas fa-book-open"></i> 規則宣讀</h2>
@@ -38,13 +36,16 @@
             </div>
         </section>
 
-        <!-- ===== 步驟 2：比賽準備 ===== -->
+        <!-- 步驟2 -->
         <section id="step2" class="step-content">
             <div class="card">
                 <h2><i class="fas fa-users-cog"></i> 比賽準備</h2>
+                <div style="background: #f0f4ff; padding: 10px 16px; border-radius: 8px; margin-bottom: 20px;">
+                    <i class="fas fa-tag"></i> 比賽編號：<strong id="matchIdDisplay">載入中...</strong>
+                </div>
                 <p class="sub">設定兩位 AI 選手，並為每人選擇策略產生方式。</p>
 
-                <!-- 選手 A 設定 -->
+                <!-- 玩家 A -->
                 <div class="player-setup">
                     <h3><i class="fas fa-user-astronaut"></i> 玩家 A</h3>
                     <div class="form-group">
@@ -64,7 +65,6 @@
                             <option value="manual">指定策略</option>
                         </select>
                     </div>
-                    <!-- AI 選擇策略區塊 -->
                     <div id="playerA_ai" class="strategy-block">
                         <p>請將以下提示詞複製給選手 A，讓它自行選擇策略名稱：</p>
                         <div class="prompt-box">
@@ -76,7 +76,6 @@
                             <input type="text" id="playerAStrategyInput" class="form-control" placeholder="請貼上 AI 回覆的策略名稱" oninput="checkBothStrategies()">
                         </div>
                     </div>
-                    <!-- 指定策略區塊 -->
                     <div id="playerA_manual" class="strategy-block" style="display:none;">
                         <div class="form-group">
                             <label>指定策略名稱</label>
@@ -92,7 +91,7 @@
                     </div>
                 </div>
 
-                <!-- 選手 B 設定 -->
+                <!-- 玩家 B -->
                 <div class="player-setup">
                     <h3><i class="fas fa-user-astronaut"></i> 玩家 B</h3>
                     <div class="form-group">
@@ -112,7 +111,6 @@
                             <option value="manual">指定策略</option>
                         </select>
                     </div>
-                    <!-- AI 選擇策略區塊 -->
                     <div id="playerB_ai" class="strategy-block">
                         <p>請將以下提示詞複製給選手 B，讓它自行選擇策略名稱：</p>
                         <div class="prompt-box">
@@ -124,7 +122,6 @@
                             <input type="text" id="playerBStrategyInput" class="form-control" placeholder="請貼上 AI 回覆的策略名稱" oninput="checkBothStrategies()">
                         </div>
                     </div>
-                    <!-- 指定策略區塊 -->
                     <div id="playerB_manual" class="strategy-block" style="display:none;">
                         <div class="form-group">
                             <label>指定策略名稱</label>
@@ -140,7 +137,6 @@
                     </div>
                 </div>
 
-                <!-- 賽制選擇 -->
                 <div class="form-group">
                     <label>比賽制度</label>
                     <select id="gameMode" class="form-control">
@@ -156,7 +152,7 @@
             </div>
         </section>
 
-        <!-- ===== 步驟 3：比賽中途 ===== -->
+        <!-- 步驟3 -->
         <section id="step3" class="step-content">
             <div class="card">
                 <h2><i class="fas fa-fist-raised"></i> 比賽中途</h2>
@@ -170,7 +166,6 @@
                 </div>
 
                 <div class="prompts-container">
-                    <!-- 選手 A 提示詞 -->
                     <div class="prompt-section">
                         <h3 id="promptATitle">🤖 玩家A Prompt</h3>
                         <div class="prompt-box">
@@ -183,7 +178,6 @@
                             <button class="btn btn-primary" onclick="parseResponse('A')"><i class="fas fa-check"></i> 解析回應</button>
                         </div>
                     </div>
-                    <!-- 選手 B 提示詞 -->
                     <div class="prompt-section">
                         <h3 id="promptBTitle">🤖 玩家B Prompt</h3>
                         <div class="prompt-box">
@@ -198,7 +192,6 @@
                     </div>
                 </div>
 
-                <!-- 回合結果 -->
                 <div id="roundResult" class="round-result hidden">
                     <h3>🎯 本回合結果</h3>
                     <div class="battle-result">
@@ -223,7 +216,6 @@
                     <button id="nextRoundBtn" class="btn btn-success" onclick="nextRound()"><i class="fas fa-forward"></i> 下一回合</button>
                 </div>
 
-                <!-- 遊戲結束 -->
                 <div id="gameOver" class="game-over hidden">
                     <h2>🏆 比賽結束！</h2>
                     <div id="finalWinner" class="final-winner"></div>
@@ -232,7 +224,7 @@
             </div>
         </section>
 
-        <!-- ===== 步驟 4：比賽結果與復盤 ===== -->
+        <!-- 步驟4 -->
         <section id="step4" class="step-content">
             <div class="card">
                 <h2><i class="fas fa-flag-checkered"></i> 比賽結果與復盤</h2>
@@ -263,7 +255,7 @@
             </div>
         </section>
 
-        <!-- ===== 步驟 5：交換復盤結果 ===== -->
+        <!-- 步驟5 -->
         <section id="step5" class="step-content">
             <div class="card">
                 <h2><i class="fas fa-exchange-alt"></i> 交換復盤結果</h2>
@@ -296,7 +288,6 @@
                 <button class="btn btn-secondary" onclick="resetAll()"><i class="fas fa-redo"></i> 重新開始</button>
             </div>
         </section>
-
     </div>
 
     <script src="script.js"></script>
