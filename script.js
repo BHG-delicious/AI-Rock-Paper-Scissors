@@ -32,7 +32,7 @@ async function loadRules() {
     } catch (e) {
         console.error('載入規則失敗:', e);
         document.getElementById('ruleDisplay').innerHTML = 
-            '<div class="message error">⚠️ 無法載入規則檔案，請確認 <code>/rules.txt</code> 是否存在。</div>' +
+            '<div class="message error">⚠️ 無法載入規則檔案，請確認 <code>/AI-Rock-Paper-Scissors/rules.txt</code> 是否存在。</div>' +
             '<p style="margin-top:10px;">您可以手動將規則內容貼入下方，再點擊「複製規則」。</p>' +
             '<textarea id="manualRuleInput" class="form-control" rows="6" placeholder="請貼上規則內容..."></textarea>' +
             '<button class="btn btn-secondary" onclick="useManualRule()" style="margin-top:8px;">使用手動規則</button>';
@@ -72,8 +72,11 @@ function generateMatchId() {
 // ==================== 初始化 ====================
 document.addEventListener('DOMContentLoaded', function() {
     loadRules().then(() => {
-        // 進入步驟2時會透過 updateStrategyUI 生成編號，但我們先確保顯示
-        // 但此時步驟2尚未顯示，沒關係
+        // 生成初始比賽編號並顯示
+        if (!gameState.matchId) {
+            gameState.matchId = generateMatchId();
+            document.getElementById('matchIdDisplay').textContent = gameState.matchId;
+        }
         updateStrategyUI('A');
         updateStrategyUI('B');
         checkBothStrategies();
@@ -119,7 +122,7 @@ function toggleStep1Next() {
 
 // ==================== 步驟2 ====================
 function updateStrategyUI(player) {
-    // 若尚未產生比賽編號，則生成
+    // 確保比賽編號已產生
     if (!gameState.matchId) {
         gameState.matchId = generateMatchId();
         document.getElementById('matchIdDisplay').textContent = gameState.matchId;
@@ -128,10 +131,15 @@ function updateStrategyUI(player) {
     const mode = document.getElementById(`player${player}StrategyMode`).value;
     const aiBlock = document.getElementById(`player${player}_ai`);
     const manualBlock = document.getElementById(`player${player}_manual`);
+    // 取得對方模型名稱
+    const opponentModel = player === 'A' 
+        ? document.getElementById('playerBModel').value 
+        : document.getElementById('playerAModel').value;
+    const opponentName = opponentModel || (player === 'A' ? '玩家B' : '玩家A');
+
     if (mode === 'ai') {
         aiBlock.style.display = 'block';
         manualBlock.style.display = 'none';
-        const opponentName = player === 'A' ? '玩家B' : '玩家A';
         const prompt = `比賽編號[${gameState.matchId}]，這場比賽你的對手是「${opponentName}」，請自由選擇你要在這場比賽中使用的策略，並給我名稱`;
         document.getElementById(`player${player}_ai_prompt`).textContent = prompt;
         document.getElementById(`player${player}StrategyManual`).value = '';
@@ -154,7 +162,10 @@ function generateManualPrompt(player) {
         alert('請先輸入策略名稱。');
         return;
     }
-    const opponentName = player === 'A' ? '玩家B' : '玩家A';
+    const opponentModel = player === 'A' 
+        ? document.getElementById('playerBModel').value 
+        : document.getElementById('playerAModel').value;
+    const opponentName = opponentModel || (player === 'A' ? '玩家B' : '玩家A');
     const prompt = `比賽編號[${gameState.matchId}]，這場比賽你的對手是「${opponentName}」，這場比賽中請你使用策略「${strategyName}」，請你理解策略內涵後複誦一次策略名稱`;
     document.getElementById(`player${player}_manual_prompt`).textContent = prompt;
     document.getElementById(`player${player}_manual_prompt_area`).style.display = 'block';
@@ -194,7 +205,6 @@ function startGame() {
         return;
     }
 
-    // 若 matchId 為空（理論上不會），則生成
     if (!gameState.matchId) {
         gameState.matchId = generateMatchId();
         document.getElementById('matchIdDisplay').textContent = gameState.matchId;
@@ -223,6 +233,8 @@ function startGame() {
 
     document.getElementById('roundResult').classList.add('hidden');
     document.getElementById('gameOver').classList.add('hidden');
+    // 禁用下一回合按鈕，直到雙方解析完成
+    document.getElementById('nextRoundBtn').disabled = true;
 
     goToStep(3);
     generateRoundPrompts();
@@ -238,10 +250,17 @@ function generateRoundPrompts() {
 
     document.getElementById('promptAContent').textContent = promptA;
     document.getElementById('promptBContent').textContent = promptB;
+    // 清空回應區
     document.getElementById('responseA').value = '';
     document.getElementById('responseB').value = '';
+    // 隱藏回合結果
     document.getElementById('roundResult').classList.add('hidden');
     document.getElementById('gameOver').classList.add('hidden');
+    // 重置回應狀態，避免上一回合殘留
+    gameState.lastResponseA = null;
+    gameState.lastResponseB = null;
+    // 禁用下一回合按鈕
+    document.getElementById('nextRoundBtn').disabled = true;
 }
 
 function buildPrompt(player, opponent, history, lastOpponentResponse) {
@@ -351,10 +370,12 @@ function parseResponse(player) {
         } else {
             gameState.lastResponseB = json;
         }
+        alert(`✅ ${player === 'A' ? '玩家A' : '玩家B'} 回應解析成功！`);
+        // 檢查雙方是否都已回應
         if (gameState.lastResponseA && gameState.lastResponseB) {
             processRound();
         } else {
-            alert(`✅ ${player === 'A' ? '玩家A' : '玩家B'} 回應已解析，等待另一位選手。`);
+            // 尚未完整，等待另一位
         }
     } catch (e) {
         alert(`❌ 解析失敗：${e.message}\n\n請確認格式為 JSON，例如：\n{"choice":"rock","reason":"我的分析..."}`);
@@ -397,6 +418,7 @@ function processRound() {
     if (gameState.playerA.wins >= mode.wins || gameState.playerB.wins >= mode.wins) {
         endGame();
     } else {
+        // 啟用下一回合按鈕
         document.getElementById('nextRoundBtn').disabled = false;
     }
 }
@@ -419,9 +441,15 @@ function showRoundResult(result) {
 }
 
 function nextRound() {
+    // 檢查是否雙方都已解析 (但按鈕已被禁用，不過為安全起見再次檢查)
+    if (!gameState.lastResponseA || !gameState.lastResponseB) {
+        alert('請確保雙方都已解析回應後再進入下一回合。');
+        return;
+    }
     gameState.currentRound++;
     document.getElementById('currentRound').textContent = gameState.currentRound;
-    document.getElementById('nextRoundBtn').disabled = true;
+    // 清空結果顯示（隱藏）
+    document.getElementById('roundResult').classList.add('hidden');
     generateRoundPrompts();
 }
 
@@ -429,6 +457,8 @@ function endGame() {
     const winner = gameState.playerA.wins >= gameState.gameMode.wins ? gameState.playerA.name : gameState.playerB.name;
     document.getElementById('finalWinner').textContent = `🏆 ${winner} 獲得勝利！\n${gameState.gameMode.name}\n最終比分：${gameState.playerA.wins} : ${gameState.playerB.wins}`;
     document.getElementById('gameOver').classList.remove('hidden');
+    // 禁用下一回合按鈕
+    document.getElementById('nextRoundBtn').disabled = true;
     setTimeout(() => {
         goToStep(4);
         setupReplay();
@@ -439,14 +469,19 @@ function endGame() {
 function setupReplay() {
     const lastJSON_A = gameState.lastResponseA || { choice: '?', reason: '無' };
     const lastJSON_B = gameState.lastResponseB || { choice: '?', reason: '無' };
+    const scoreA = gameState.playerA.wins;
+    const scoreB = gameState.playerB.wins;
+    const winner = scoreA > scoreB ? '玩家A' : (scoreB > scoreA ? '玩家B' : '平手');
 
-    const replayA = `比賽編號[${gameState.matchId}]結果：玩家A贏得了比賽，比分${gameState.playerA.wins} : ${gameState.playerB.wins}
+    // 給玩家A的復盤提示詞（顯示實際獲勝者，比分統一 A : B）
+    const replayA = `比賽編號[${gameState.matchId}]結果：${winner}贏得了比賽，比分${scoreA} : ${scoreB}
 請你完整復盤本場比賽，並詳細分析你與對手在思考、判斷、策略及戰術上的表現
 
 附上對手在最後一回合回應的JSON做為參考：
 ${JSON.stringify(lastJSON_B, null, 2)}`;
 
-    const replayB = `比賽編號[${gameState.matchId}]結果：玩家B贏得了比賽，比分${gameState.playerB.wins} : ${gameState.playerA.wins}
+    // 給玩家B的復盤提示詞
+    const replayB = `比賽編號[${gameState.matchId}]結果：${winner}贏得了比賽，比分${scoreA} : ${scoreB}
 請你完整復盤本場比賽，並詳細分析你與對手在思考、判斷、策略及戰術上的表現
 
 附上對手在最後一回合回應的JSON做為參考：
