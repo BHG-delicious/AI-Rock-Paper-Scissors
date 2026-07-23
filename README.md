@@ -52,6 +52,7 @@
 - `script.js` - [主要邏輯](/script.js)
 - `rules.txt` - [比賽規則文字檔](/rules.txt)（便於隨時更新）
 - `README.md` - [本介紹文件](/README.md)
+- `AI猜拳-medium網頁內容.pdf` - [參考文件](/AI猜拳-medium網頁內容.pdf)
 
 ## 🛠 技術實現
 
