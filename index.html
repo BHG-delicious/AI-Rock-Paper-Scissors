@@ -50,7 +50,7 @@
                     <h3><i class="fas fa-user-astronaut"></i> 玩家 A</h3>
                     <div class="form-group">
                         <label>AI 模型</label>
-                        <select id="playerAModel" class="form-control">
+                        <select id="playerAModel" class="form-control" onchange="updateStrategyUI('A')">
                             <option value="DeepSeek">DeepSeek</option>
                             <option value="Gemini">Gemini</option>
                             <option value="Claude">Claude</option>
@@ -96,7 +96,7 @@
                     <h3><i class="fas fa-user-astronaut"></i> 玩家 B</h3>
                     <div class="form-group">
                         <label>AI 模型</label>
-                        <select id="playerBModel" class="form-control">
+                        <select id="playerBModel" class="form-control" onchange="updateStrategyUI('B')">
                             <option value="Gemini">Gemini</option>
                             <option value="DeepSeek">DeepSeek</option>
                             <option value="Claude">Claude</option>
@@ -213,7 +213,7 @@
                             </div>
                         </div>
                     </div>
-                    <button id="nextRoundBtn" class="btn btn-success" onclick="nextRound()"><i class="fas fa-forward"></i> 下一回合</button>
+                    <button id="nextRoundBtn" class="btn btn-success" disabled onclick="nextRound()"><i class="fas fa-forward"></i> 下一回合</button>
                 </div>
 
                 <div id="gameOver" class="game-over hidden">
